@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/refresh",
+      "schedule": "0 * * * *"
+    }
+  ],
+  "_note": "Vercel's serverless cron sends a GET request to `path` and does not include custom headers, so it cannot send x-cron-secret. The /api/cron/refresh route therefore also accepts the secret via a `?secret=` query param as a fallback. If deploying this cron to Vercel, update the path here to include the query param, e.g. \"/api/cron/refresh?secret=YOUR_CRON_SECRET\", and set CRON_SECRET in the Vercel project's environment variables to match."
+}
