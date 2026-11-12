@@ -3,6 +3,9 @@ node_modules
 out
 .env*.local
 .env.local
+.env.local.*
+.env*.backup*
+*.env.bak
 .DS_Store
 *.pem
 npm-debug.log*
