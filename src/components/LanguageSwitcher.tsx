@@ -24,7 +24,7 @@ export default function LanguageSwitcher() {
             { locale: nextLocale }
           );
         }}
-        className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-navy"
+        className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-navy dark:border-white/20 dark:bg-ink/60 dark:text-cream-50"
         aria-label="Select language"
       >
         {routing.locales.map((l) => (

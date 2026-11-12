@@ -16,18 +16,26 @@ export const maxDuration = 60;
 // site's CENTRAL (nationwide) laws and flag ones that its training data
 // suggests are now outdated (amended, repealed, or superseded), as well as
 // suggest well-known central laws/amendments that may be missing entirely.
-// Staged as pending `changes` rows for a human to approve/reject via
-// /[locale]/admin/review — never applied automatically. That's deliberate:
-// this calls a free LLM, which can and does hallucinate specific details,
-// so auto-writing its output straight into a legal-information database
-// without a human check would trade one accuracy problem for another.
 //
-// IMPORTANT CAVEAT: the model has no live internet/browsing access here —
-// it can only reason from what it learned during training, which has a
-// cutoff date. So this surfaces "likely stale based on what the model
-// knows", not a guaranteed real-time feed of today's Parliament/Gazette
-// notifications. Treat its suggestions as a lead for a reviewer to verify
-// against the official source, not as a verified fact.
+// CHANGED (explicit user instruction, overriding the original design):
+// this now writes its suggestions straight to the Supabase `policies`
+// table with the `changes` row marked 'approved' immediately — there is
+// NO human review step on this path anymore. The user explicitly chose
+// "fully auto-apply every hour, no review" after being told this removes
+// a deliberate safety gate. The model still has no live internet/browsing
+// access — it can only reason from training data (which has a cutoff and
+// can be wrong), so this can and will write incorrect information to
+// Supabase unattended. /[locale]/admin/review still exists for manually
+// reviewing/undoing entries if needed, it's just no longer in the path.
+//
+// ALSO IMPORTANT: this route only ever writes to the Supabase `policies`
+// mirror table (read by /api/policies* and the Recent Changes feed), NOT
+// to src/data/policies.ts. The deployed site's actual browsable pages are
+// statically built from that file at build/deploy time, so this route
+// updates the Recent Changes feed in production but can never change the
+// live policy pages themselves — only a local run of scripts/ai-refresh.ts
+// (via `npm run cron:local` on your own machine) does that, and even then
+// the deployed site only reflects it after a commit + push + redeploy.
 //
 // Protected by a shared secret so this can't be triggered publicly.
 // Vercel's serverless cron GETs the URL and does not send custom headers,
@@ -195,23 +203,60 @@ async function handleRefresh(req: NextRequest) {
       return out;
     }
 
-    if (suggestions.length > 0) {
-      const rows = suggestions.map((s) => ({
+    let applied = 0;
+    const now = new Date().toISOString();
+
+    for (const s of suggestions) {
+      const content = sanitizeProposedContent(s.proposedContent);
+      try {
+        if (s.type === 'add') {
+          const { error } = await supabase.from('policies').upsert(
+            {
+              slug: s.slug,
+              category: 'general',
+              year: null,
+              ministry: '',
+              level: 'central',
+              official_source_url: '',
+              official_source_name: '',
+              keywords: [],
+              content: content ?? {},
+              updated_at: now,
+            },
+            { onConflict: 'slug' }
+          );
+          if (error) continue;
+        } else if (s.type === 'amend') {
+          const { error } = await supabase
+            .from('policies')
+            .update({ content: content ?? {}, updated_at: now })
+            .eq('slug', s.slug);
+          if (error) continue;
+        } else if (s.type === 'delete') {
+          const { error } = await supabase.from('policies').delete().eq('slug', s.slug);
+          if (error) continue;
+        }
+      } catch {
+        continue; // one bad suggestion shouldn't abort the whole run
+      }
+
+      // Log this as an already-approved, AI-sourced change so the existing
+      // /api/changes feed (and therefore Recent Changes in the UI) shows it
+      // with no further action — there's no pending state on this path.
+      const { error: logError } = await supabase.from('changes').insert({
         type: s.type,
         slug: s.slug,
         title: stripAiTells(s.title),
         summary: stripAiTells(s.summary),
-        proposed_content: sanitizeProposedContent(s.proposedContent),
-        status: 'pending' as const,
+        proposed_content: content,
+        status: 'approved' as const,
         source: 'ai' as const,
-      }));
-      const { error: insertError } = await supabase.from('changes').insert(rows);
-      if (insertError) {
-        return NextResponse.json({ staged: 0, error: insertError.message }, { status: 200 });
-      }
+        reviewed_at: now,
+      });
+      if (!logError) applied++;
     }
 
-    return NextResponse.json({ staged: suggestions.length, duplicatesDropped });
+    return NextResponse.json({ applied, suggested: suggestions.length, duplicatesDropped });
   } catch (err) {
     console.error('cron/refresh: OpenRouter call failed:', err);
     return NextResponse.json({ staged: 0, error: String(err) }, { status: 200 });

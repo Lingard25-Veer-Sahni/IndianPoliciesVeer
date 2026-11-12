@@ -68,8 +68,8 @@ export default function AdminReviewPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-2xl font-bold text-gray-900">Admin: Review pending changes</h1>
-      <p className="mt-2 text-sm text-gray-600">
+      <h1 className="text-2xl font-bold text-ink dark:text-cream-50">Admin: Review pending changes</h1>
+      <p className="mt-2 text-sm text-ink-500 dark:text-cream-200/70">
         Internal tool. Enter the admin secret to load and review AI-staged changes.
       </p>
 
@@ -79,7 +79,7 @@ export default function AdminReviewPage() {
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
           placeholder="Admin secret"
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-ink dark:border-white/20 dark:bg-ink/60 dark:text-cream-50"
         />
         <button
           type="button"
@@ -92,28 +92,35 @@ export default function AdminReviewPage() {
       </div>
 
       {error && (
-        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
           {error}
         </p>
       )}
 
       {!loading && secret && changes.length === 0 && !error && (
-        <p className="mt-6 text-sm text-gray-500">No pending changes.</p>
+        <p className="mt-6 text-sm text-ink-500 dark:text-cream-200/70">No pending changes.</p>
       )}
 
       <div className="mt-6 space-y-4">
         {changes.map((c) => (
-          <div key={c.id} className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+          <div
+            key={c.id}
+            className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-ink/60"
+          >
             <div className="flex items-center justify-between">
-              <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium uppercase text-gray-700">
+              <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium uppercase text-gray-700 dark:bg-white/10 dark:text-cream-100">
                 {c.type}
               </span>
-              <span className="text-xs text-gray-400">{c.source} · {new Date(c.createdAt).toLocaleString()}</span>
+              <span className="text-xs text-ink-500/80 dark:text-cream-200/50">
+                {c.source} · {new Date(c.createdAt).toLocaleString()}
+              </span>
             </div>
-            <h2 className="mt-2 text-base font-semibold text-gray-900">{c.title || c.slug}</h2>
-            <p className="mt-1 text-sm text-gray-600">{c.summary}</p>
+            <h2 className="mt-2 text-base font-semibold text-ink dark:text-cream-50">
+              {c.title || c.slug}
+            </h2>
+            <p className="mt-1 text-sm text-ink-500 dark:text-cream-200/70">{c.summary}</p>
             {c.proposedContent !== null && c.proposedContent !== undefined ? (
-              <pre className="mt-2 max-h-40 overflow-auto rounded bg-gray-50 p-2 text-xs text-gray-700">
+              <pre className="mt-2 max-h-40 overflow-auto rounded bg-gray-50 p-2 text-xs text-gray-700 dark:bg-white/5 dark:text-cream-100">
                 {JSON.stringify(c.proposedContent, null, 2)}
               </pre>
             ) : null}

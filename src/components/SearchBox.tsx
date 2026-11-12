@@ -62,12 +62,12 @@ export default function SearchBox({ locale }: { locale: string }) {
           }}
           onFocus={() => setOpen(true)}
           placeholder={t('placeholder')}
-          className="w-full rounded-full border border-gray-300 px-5 py-3 text-sm shadow-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+          className="w-full rounded-full border border-ink/15 bg-white px-5 py-3 text-sm text-ink shadow-warm focus:border-teal focus:outline-none focus:ring-1 focus:ring-teal dark:border-white/15 dark:bg-ink/60 dark:text-cream-50 dark:placeholder:text-cream-200/40"
         />
       </form>
 
       {open && results.length > 0 && (
-        <div className="absolute z-10 mt-2 w-full rounded-lg border border-gray-200 bg-white p-2 text-left shadow-lg">
+        <div className="absolute z-10 mt-2 w-full rounded-lg border border-ink/10 bg-white p-2 text-left shadow-warm-lg dark:border-white/10 dark:bg-ink">
           {results.map((p) => {
             const content = p.content[loc];
             return (
@@ -78,17 +78,21 @@ export default function SearchBox({ locale }: { locale: string }) {
                   setOpen(false);
                   router.push(`/policies/${p.slug}`);
                 }}
-                className="block w-full rounded-md px-3 py-2 text-left hover:bg-gray-50"
+                className="block w-full rounded-md px-3 py-2 text-left hover:bg-cream-100 dark:hover:bg-white/5"
               >
-                <span className="block text-sm font-medium text-gray-900">{content.title}</span>
-                <span className="block text-xs text-gray-500">{tc(p.category)}</span>
+                <span className="block text-sm font-medium text-ink dark:text-cream-50">
+                  {content.title}
+                </span>
+                <span className="block text-xs text-ink-500 dark:text-cream-200/70">
+                  {tc(p.category)}
+                </span>
               </button>
             );
           })}
           <button
             type="button"
             onClick={goToResults}
-            className="mt-1 block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-navy hover:bg-gray-50"
+            className="mt-1 block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-teal-700 hover:bg-cream-100 dark:text-teal-100 dark:hover:bg-white/5"
           >
             {t('viewAllResults', { query })}
           </button>

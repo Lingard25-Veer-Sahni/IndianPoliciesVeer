@@ -15,7 +15,7 @@ const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 const EXPLABS_ENDPOINT = 'https://api.experientiallabs.ai/v1/chat/completions';
 
 export function getOpenRouterModel(): string {
-  return process.env.OPENROUTER_MODEL || 'minimax/minimax-m2.7:free';
+  return process.env.OPENROUTER_MODEL || 'baidu/ernie-5.5-flash-preview:free';
 }
 
 export function getExplabsModel(): string {
@@ -41,9 +41,24 @@ export function getExplabsModel(): string {
 // move to the next entry, so this list doesn't need to be perfectly
 // up-to-date to keep working, but it should be spot-checked occasionally
 // since free-tier slugs churn faster than paid ones.
+//
+// Updated Nov 2026: the previous list (minimax/minimax-m2.7:free,
+// minimax/minimax-m3:free, nvidia/nemotron-3-super-120b-a12b:free) had all
+// three been fully deprecated by OpenRouter ("This model is unavailable for
+// free") by this point, and the one surviving fallback
+// (google/gemma-4-31b-it:free) was hitting the shared-pool 429 at the same
+// time Experiential Labs (the primary provider, tried before any of this
+// list) had exhausted its own daily spend cap — so every single attempt in
+// the whole chain failed and the AI search route silently fell back to
+// plain Fuse ranking with answer: null on every request, which is what
+// made the newly re-enabled AI answer paragraph look completely broken.
+// Replaced with four free slugs confirmed live via direct curl to
+// https://openrouter.ai/api/v1/models and a real chat-completion request
+// with response_format: json_object.
 const DEFAULT_FALLBACK_MODELS = [
-  'minimax/minimax-m3:free',
-  'nvidia/nemotron-3-super-120b-a12b:free',
+  'nvidia/nemotron-3.5-lightning:free',
+  'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'nvidia/nemotron-3.5-super-vl:free',
   'google/gemma-4-31b-it:free',
 ];
 
@@ -260,6 +275,11 @@ export async function chatCompletion(messages: ChatMessage[]): Promise<string> {
             ? new Error(`${provider} request to ${model} timed out after ${attemptTimeout}ms`)
             : err
           : new Error(String(err));
+      // Logged per-attempt (not just the final failure) so a full-chain
+      // outage can actually be diagnosed — previously only the last
+      // attempt's error reached the console, hiding which earlier
+      // models/providers failed and why.
+      console.error(`chatCompletion attempt failed (${provider}/${model}):`, lastError.message);
       // Move on to the next model/provider in the chain immediately — no
       // backoff delay here. A 429 means the pool is out of capacity right
       // now, not that it'll clear in the next few hundred milliseconds, so

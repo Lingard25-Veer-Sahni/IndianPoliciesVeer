@@ -7,21 +7,23 @@ import { indianStates } from '@/data/states';
 import { createSearchIndex, search } from '@/lib/search';
 import type { Locale } from '@/i18n/routing';
 import PolicyCard from './PolicyCard';
+import IndiaPoliticalMap from './IndiaPoliticalMap';
 
 // A policy applies in a given state if it's a central law (applies
 // everywhere in India) or if it's a state law that explicitly lists that
 // state. See the `applicability`/`states` fields on Policy in
 // src/data/policies.ts.
-function appliesInState(policy: Policy, stateSlug: string): boolean {
+export function appliesInState(policy: Policy, stateSlug: string): boolean {
   if (policy.applicability !== 'state') return true;
   return policy.states?.includes(stateSlug) ?? false;
 }
 
-// State-specific law lookup: a visitor picks their state, optionally types a
-// question, and sees the policies that apply there. Today every entry in
-// policies.ts is a central law (so results are the same regardless of state
-// choice), but the filtering logic and UI are already wired up for
-// state-specific laws to be added later — see Policy.applicability/states.
+// State-specific law lookup: a visitor picks their state (via the dropdown
+// or the grid of state buttons below it, kept in sync both ways),
+// optionally types a question, and sees the policies that apply there,
+// split honestly into two groups — real state-scoped entries vs. central
+// (nationwide) laws — rather than relabeling central policies as
+// state-specific. See Policy.applicability/states in src/data/policies.ts.
 export default function StateLookup({ locale }: { locale: string }) {
   const t = useTranslations('statePolicies');
   const loc = locale as Locale;
@@ -36,15 +38,22 @@ export default function StateLookup({ locale }: { locale: string }) {
     [loc]
   );
 
-  const results = useMemo(() => {
-    if (!stateSlug) return [];
+  const selectedStateName = sortedStates.find((s) => s.slug === stateSlug)?.name[loc] ?? '';
+
+  const { stateSpecific, national } = useMemo(() => {
+    if (!stateSlug) return { stateSpecific: [] as Policy[], national: [] as Policy[] };
     const inState = policies.filter((p) => appliesInState(p, stateSlug));
     const trimmed = query.trim();
-    if (!trimmed) return inState;
-    const inStateSlugs = new Set(inState.map((p) => p.slug));
-    return search(fuse, trimmed)
-      .map((r) => r.item.policy)
-      .filter((p) => inStateSlugs.has(p.slug));
+    const matching = trimmed
+      ? (() => {
+          const slugs = new Set(search(fuse, trimmed).map((r) => r.item.policy.slug));
+          return inState.filter((p) => slugs.has(p.slug));
+        })()
+      : inState;
+    return {
+      stateSpecific: matching.filter((p) => p.applicability === 'state'),
+      national: matching.filter((p) => p.applicability !== 'state'),
+    };
   }, [stateSlug, query, fuse]);
 
   return (
@@ -54,11 +63,11 @@ export default function StateLookup({ locale }: { locale: string }) {
         className="flex flex-col gap-3 sm:flex-row sm:items-end"
       >
         <label className="flex flex-1 flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700">{t('stateLabel')}</span>
+          <span className="font-medium text-ink-700 dark:text-cream-100">{t('stateLabel')}</span>
           <select
             value={stateSlug}
             onChange={(e) => setStateSlug(e.target.value)}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm"
+            className="rounded-md border border-ink/15 bg-white px-4 py-2 text-sm dark:border-white/15 dark:bg-ink/60 dark:text-cream-50"
           >
             <option value="">{t('statePlaceholder')}</option>
             {sortedStates.map((s) => (
@@ -69,34 +78,97 @@ export default function StateLookup({ locale }: { locale: string }) {
           </select>
         </label>
         <label className="flex flex-1 flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700">{t('questionLabel')}</span>
+          <span className="font-medium text-ink-700 dark:text-cream-100">{t('questionLabel')}</span>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('questionPlaceholder')}
-            className="rounded-md border border-gray-300 px-4 py-2 text-sm"
+            className="rounded-md border border-ink/15 bg-white px-4 py-2 text-sm dark:border-white/15 dark:bg-ink/60 dark:text-cream-50"
           />
         </label>
-        <button
-          type="submit"
-          className="rounded-md bg-navy px-5 py-2 text-sm font-medium text-white hover:bg-navy/90"
-        >
-          {t('submitButton')}
-        </button>
       </form>
 
-      <p className="mt-4 text-sm text-gray-500">{t('coverageNotice')}</p>
+      {/* Real clickable political map of India's states/UTs, kept in sync
+          with the dropdown and the grid below via the same stateSlug state.
+          See IndiaPoliticalMap.tsx / src/lib/india-map.ts for the boundary
+          data's provenance and license caveat. */}
+      <div className="mt-6 mx-auto max-w-sm">
+        <IndiaPoliticalMap value={stateSlug} onSelect={setStateSlug} />
+      </div>
+
+      {/* Visual state picker — a labelled, accessible grid, serving both as
+          a fallback if the map fails to load and as an accessible
+          alternative for small territories that are hard to target on the
+          map (e.g. Lakshadweep, Chandigarh) — kept in sync with the
+          dropdown and the map above in all directions. */}
+      <div className="mt-6">
+        <p className="text-xs font-medium uppercase tracking-wide text-ink-500 dark:text-cream-200/60">
+          {t('gridLabel')}
+        </p>
+        <div
+          className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4"
+          role="group"
+          aria-label={t('stateLabel')}
+        >
+          {sortedStates.map((s) => {
+            const active = s.slug === stateSlug;
+            return (
+              <button
+                key={s.slug}
+                type="button"
+                onClick={() => setStateSlug((cur) => (cur === s.slug ? '' : s.slug))}
+                aria-pressed={active}
+                className={`rounded-lg border px-3 py-2 text-left text-sm transition ${
+                  active
+                    ? 'border-teal-600 bg-teal-50 font-medium text-teal-700 dark:border-teal-100 dark:bg-teal-700/30 dark:text-teal-100'
+                    : 'border-ink/10 bg-white text-ink-700 hover:border-teal-600/50 dark:border-white/10 dark:bg-ink/60 dark:text-cream-100 dark:hover:border-teal-100/50'
+                }`}
+              >
+                {s.name[loc]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <p className="mt-4 text-sm text-ink-500 dark:text-cream-200/60">{t('coverageNotice')}</p>
 
       {!stateSlug ? (
-        <p className="mt-10 text-center text-gray-500">{t('selectStatePrompt')}</p>
-      ) : results.length === 0 ? (
-        <p className="mt-10 text-center text-gray-500">{t('noResults')}</p>
+        <p className="mt-10 text-center text-ink-500 dark:text-cream-200/60">{t('selectStatePrompt')}</p>
       ) : (
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {results.map((p) => (
-            <PolicyCard key={p.slug} policy={p} locale={locale} />
-          ))}
+        <div className="mt-8 space-y-10">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-500 dark:text-cream-200/60">
+              {t('stateSpecificHeading', { state: selectedStateName })}
+            </h2>
+            {stateSpecific.length === 0 ? (
+              <p className="mt-3 text-sm text-ink-500 dark:text-cream-200/60">
+                {t('noStateSpecific', { state: selectedStateName })}
+              </p>
+            ) : (
+              <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {stateSpecific.map((p) => (
+                  <PolicyCard key={p.slug} policy={p} locale={locale} />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-500 dark:text-cream-200/60">
+              {t('nationalHeading')}
+            </h2>
+            {national.length === 0 ? (
+              <p className="mt-3 text-sm text-ink-500 dark:text-cream-200/60">{t('noResults')}</p>
+            ) : (
+              <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {national.map((p) => (
+                  <PolicyCard key={p.slug} policy={p} locale={locale} />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

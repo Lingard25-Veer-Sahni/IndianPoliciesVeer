@@ -88,7 +88,7 @@ export async function transcribeVoiceboxSample(
     if (res.status === 202) {
       if (Date.now() - start > maxWaitMs) {
         throw new Error(
-          "Voicebox is still downloading its speech-recognition model (first-use only) and didn't finish in time — wait a minute and try again."
+          "Voicebox is still downloading its speech-recognition model (first-use only) and didn't finish in time, wait a minute and try again."
         );
       }
       await new Promise((resolve) => setTimeout(resolve, 3000));

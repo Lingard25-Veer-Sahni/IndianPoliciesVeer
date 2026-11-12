@@ -101,8 +101,8 @@ export default function AdminVoicePage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
-      <h1 className="text-2xl font-bold text-gray-900">Admin: Site narration voice</h1>
-      <p className="mt-2 text-sm text-gray-600">
+      <h1 className="text-2xl font-bold text-ink dark:text-cream-50">Admin: Site narration voice</h1>
+      <p className="mt-2 text-sm text-ink-500 dark:text-cream-200/70">
         Internal tool. Upload a short (10-30s), clean voice sample and it becomes the one voice
         used to read every policy aloud site-wide, replacing the Sarvam/Google/free chain (which
         stays wired up only as a safety net if the self-hosted Voicebox instance is ever
@@ -115,8 +115,9 @@ export default function AdminVoicePage() {
         >
           Voicebox
         </a>{' '}
-        instance with <code className="rounded bg-gray-100 px-1">VOICEBOX_URL</code> set — see{' '}
-        <code className="rounded bg-gray-100 px-1">.env.example</code>.
+        instance with{' '}
+        <code className="rounded bg-gray-100 px-1 dark:bg-white/10">VOICEBOX_URL</code> set, see{' '}
+        <code className="rounded bg-gray-100 px-1 dark:bg-white/10">.env.example</code>.
       </p>
 
       <div className="mt-4 flex gap-2">
@@ -125,7 +126,7 @@ export default function AdminVoicePage() {
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
           placeholder="Admin secret"
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-ink dark:border-white/20 dark:bg-ink/60 dark:text-cream-50"
         />
         <button
           type="button"
@@ -138,36 +139,36 @@ export default function AdminVoicePage() {
       </div>
 
       {error && (
-        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+        <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
           {error}
         </p>
       )}
 
       {status && !status.voiceboxUrlConfigured && (
-        <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+        <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-200">
           VOICEBOX_URL is not set on the server, so uploads will fail until a Voicebox instance is
           running and configured. See .env.example.
         </p>
       )}
 
       {status && (
-        <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <h2 className="text-sm font-semibold text-gray-900">Current status</h2>
+        <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-ink/60">
+          <h2 className="text-sm font-semibold text-ink dark:text-cream-50">Current status</h2>
           {isActive ? (
-            <p className="mt-2 text-sm text-indiagreen">
-              Active — &quot;{voice!.name}&quot; is narrating every page site-wide.
+            <p className="mt-2 text-sm text-indiagreen dark:text-teal-100">
+              Active, &quot;{voice!.name}&quot; is narrating every page site-wide.
             </p>
           ) : voice?.status === 'pending' ? (
-            <p className="mt-2 text-sm text-amber-700">
+            <p className="mt-2 text-sm text-amber-700 dark:text-amber-200">
               Processing &quot;{voice.name}&quot;… refresh in a moment.
             </p>
           ) : voice?.status === 'failed' ? (
-            <p className="mt-2 text-sm text-red-700">
+            <p className="mt-2 text-sm text-red-700 dark:text-red-200">
               Last upload (&quot;{voice.name}&quot;) failed: {voice.errorMessage}
             </p>
           ) : (
-            <p className="mt-2 text-sm text-gray-500">
-              Not set — narration is currently using the Sarvam/Google/free engine chain.
+            <p className="mt-2 text-sm text-ink-500 dark:text-cream-200/70">
+              Not set, narration is currently using the Sarvam/Google/free engine chain.
             </p>
           )}
           {isActive && (
@@ -184,8 +185,8 @@ export default function AdminVoicePage() {
       )}
 
       {status && (
-        <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <h2 className="text-sm font-semibold text-gray-900">
+        <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-ink/60">
+          <h2 className="text-sm font-semibold text-ink dark:text-cream-50">
             {isActive ? 'Replace with a new sample' : 'Upload a sample'}
           </h2>
           <div className="mt-3 space-y-3">
@@ -195,7 +196,7 @@ export default function AdminVoicePage() {
               onChange={(e) => setName(e.target.value)}
               placeholder="Voice name (e.g. Narrator)"
               maxLength={100}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-ink dark:border-white/20 dark:bg-ink/60 dark:text-cream-50"
             />
             <input
               ref={fileInputRef}
@@ -212,9 +213,9 @@ export default function AdminVoicePage() {
             >
               {uploading ? 'Uploading & processing…' : 'Upload'}
             </button>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-ink-500 dark:text-cream-200/70">
               Processing runs Voicebox&apos;s own speech recognition on your sample to get a real
-              transcript, then attaches both to a new voice profile — this can take up to a
+              transcript, then attaches both to a new voice profile, this can take up to a
               minute or two.
             </p>
           </div>

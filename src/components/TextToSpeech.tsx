@@ -229,11 +229,13 @@ export default function TextToSpeech({ text }: { text: string }) {
   };
 
   if (!supported && cloudConfigured === false) {
-    return <p className="text-sm text-gray-500 italic">{t('ttsUnsupported')}</p>;
+    return (
+      <p className="text-sm italic text-ink-500 dark:text-cream-200/70">{t('ttsUnsupported')}</p>
+    );
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-white p-3">
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-ink/10 bg-white p-3 dark:border-white/10 dark:bg-ink/60">
       {state === 'idle' && (
         <button
           onClick={play}
@@ -247,7 +249,7 @@ export default function TextToSpeech({ text }: { text: string }) {
       {state === 'playing' && (
         <button
           onClick={pause}
-          className="inline-flex items-center gap-2 rounded-md bg-gray-700 px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+          className="inline-flex items-center gap-2 rounded-md bg-ink-700 px-4 py-2 text-sm font-medium text-white hover:opacity-90"
         >
           {t('pause')}
         </button>
@@ -263,18 +265,18 @@ export default function TextToSpeech({ text }: { text: string }) {
       {state !== 'idle' && (
         <button
           onClick={stop}
-          className="inline-flex items-center gap-2 rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="inline-flex items-center gap-2 rounded-md border border-ink/15 px-4 py-2 text-sm font-medium text-ink-700 hover:bg-cream-100 dark:border-white/15 dark:text-cream-100 dark:hover:bg-white/5"
         >
           {t('stop')}
         </button>
       )}
 
-      <label className="flex items-center gap-2 text-sm text-gray-600">
+      <label className="flex items-center gap-2 text-sm text-ink-500 dark:text-cream-200/70">
         {t('speed')}
         <select
           value={rate}
           onChange={(e) => setRate(Number(e.target.value))}
-          className="rounded border border-gray-300 px-2 py-1"
+          className="rounded border border-ink/15 bg-white px-2 py-1 text-ink dark:border-white/15 dark:bg-ink/60 dark:text-cream-50"
         >
           <option value={0.5}>0.5x (slowest)</option>
           <option value={0.6}>0.6x</option>
@@ -288,12 +290,12 @@ export default function TextToSpeech({ text }: { text: string }) {
       {/* Manual browser-voice picker: mainly useful when cloud TTS isn't
           configured/available, since the cloud voice is chosen server-side. */}
       {(cloudConfigured === false || cloudFailed) && candidates.length > 1 && (
-        <label className="flex items-center gap-2 text-sm text-gray-600">
+        <label className="flex items-center gap-2 text-sm text-ink-500 dark:text-cream-200/70">
           {t('voice')}
           <select
             value={selectedVoiceURI}
             onChange={(e) => setSelectedVoiceURI(e.target.value)}
-            className="max-w-[200px] rounded border border-gray-300 px-2 py-1"
+            className="max-w-[200px] rounded border border-ink/15 bg-white px-2 py-1 text-ink dark:border-white/15 dark:bg-ink/60 dark:text-cream-50"
           >
             {candidates.map((v) => (
               <option key={v.voiceURI} value={v.voiceURI}>
@@ -305,7 +307,7 @@ export default function TextToSpeech({ text }: { text: string }) {
       )}
 
       {noVoiceAvailable && (
-        <p className="w-full text-xs text-amber-700">{t('voiceUnavailable')}</p>
+        <p className="w-full text-xs text-amber-700 dark:text-amber-200">{t('voiceUnavailable')}</p>
       )}
     </div>
   );

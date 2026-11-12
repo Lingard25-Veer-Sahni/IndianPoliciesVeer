@@ -9,8 +9,72 @@
 }
 
 body {
-  color: #1a1a1a;
-  background: #fafaf8;
+  color: #1f2a24;
+  background: #fbf6ee;
+}
+
+/* Light/dark mode (manual toggle via ThemeToggle.tsx, class strategy in
+   tailwind.config.ts). Dark background/ink chosen to stay in the same warm
+   family as the light theme rather than a cold neutral grey. */
+.dark body {
+  color: #f5ebda;
+  background: #161b17;
+}
+
+/* ---- Warm redesign: shared component classes ---- */
+.card-warm {
+  background: #fffdf9;
+  border: 1px solid rgba(31, 42, 36, 0.08);
+  border-radius: 1rem;
+  box-shadow: 0 2px 10px -2px rgba(31, 42, 36, 0.08);
+}
+.dark .card-warm {
+  background: #1f2a24;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.4);
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  background: #138808;
+  color: #fffdf9;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+.btn-primary:hover { opacity: 0.92; }
+.btn-primary:active { transform: scale(0.98); }
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(31, 42, 36, 0.18);
+  background: #fffdf9;
+  color: #1f2a24;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+.btn-secondary:hover { background: #f5ebda; }
+.dark .btn-secondary {
+  background: #1f2a24;
+  color: #f5ebda;
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.dark .btn-secondary:hover { background: #2a362e; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .lang-hi, .lang-mr { font-family: 'Noto Sans Devanagari', system-ui, sans-serif; }

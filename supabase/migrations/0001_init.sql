@@ -1,6 +1,6 @@
 -- Schema for the DB-backed "recent changes" / AI review system.
--- Run this once in the Supabase SQL Editor for this project:
---   https://supabase.com/dashboard/project/etzdykyqbdrowygdwqmx/sql/new
+-- Run this once in your Supabase project's SQL Editor (Dashboard ->
+-- your project -> SQL Editor -> New query), followed by 0002_rls.sql.
 
 create table if not exists policies (
   slug text primary key,

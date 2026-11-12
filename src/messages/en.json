@@ -13,13 +13,41 @@
     "disclaimer": "Disclaimer",
     "privacy": "Privacy",
     "aiSearch": "AI Search",
-    "terms": "Terms"
+    "terms": "Terms",
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode"
   },
   "footer": {
     "rights": "This is an independent, non-governmental project.",
     "disclaimerShort": "Not affiliated with the Government of India. Always verify details against the official source linked on each entry.",
     "links": "Links",
-    "legal": "Legal"
+    "legal": "Legal",
+    "reviewPrivacyChoices": "Review privacy choices"
+  },
+  "entryGate": {
+    "title": "Before you start",
+    "body": "IndianPolicy is an independent, non-governmental project. Summaries here are for general information only, not legal advice, and may not reflect the very latest changes to a law.",
+    "readTerms": "Read Terms",
+    "readPrivacy": "Read Privacy Policy",
+    "readDisclaimer": "Read Disclaimer",
+    "checkboxLabel": "I understand this is informational only, not legal advice, and I agree to the Terms and Privacy Policy.",
+    "notNow": "Not now",
+    "continue": "Continue"
+  },
+  "guide": {
+    "title": "Your policy guide",
+    "welcomeTitle": "Hi, I'm your guide",
+    "close": "Close",
+    "back": "Back",
+    "skip": "Skip",
+    "next": "Next",
+    "done": "Got it",
+    "openFirstTime": "Open your policy guide",
+    "openAgain": "Show me around again",
+    "step1": "I'm here to help you find the right policy, not a lawyer, not the government, just a quick orientation.",
+    "step2": "Start from the topic cards on the home page, or search in plain language like \"how do I get a ration card\".",
+    "step3": "On \"By State\", pick your state to see which national and state-specific laws apply to you.",
+    "step4": "Every summary links to its official source, and can be read aloud in your language. Click me anytime for a refresher."
   },
   "home": {
     "heroTitle": "Understand Indian policy, in your language.",
@@ -35,7 +63,28 @@
     "feature3Desc": "English, Hindi, Tamil, Marathi, Malayalam, Bengali and Kannada.",
     "feature4Title": "Listen instead of read",
     "feature4Desc": "Built-in text-to-speech reads any summary aloud in your chosen language.",
-    "browseTeaser": "Explore all policies"
+    "browseTeaser": "Explore all policies",
+    "ctaState": "Find laws for my state",
+    "topicsTitle": "What do you need help with?",
+    "topicsSubtitle": "Start from a real-life situation instead of a legal category, each one links to the actual policies that apply.",
+    "topicExplore": "Explore",
+    "browseAll": "Or browse every policy",
+    "topics": {
+      "welfareTitle": "Welfare & benefits",
+      "welfareDesc": "Government schemes, subsidies, and social support you may be entitled to.",
+      "jobsTitle": "Jobs & workplace rights",
+      "jobsDesc": "Wages, workplace safety, leave, and your rights as an employee.",
+      "familyTitle": "Inheritance, family & property",
+      "familyDesc": "Marriage, inheritance, succession, and family-related law.",
+      "healthTitle": "Healthcare & disability",
+      "healthDesc": "Public healthcare schemes and rights for persons with disabilities.",
+      "educationTitle": "Education & scholarships",
+      "educationDesc": "Student rights, scholarships, and education policy.",
+      "housingTitle": "Housing & consumer rights",
+      "housingDesc": "Tenant protections, consumer complaints, and housing schemes."
+    },
+    "stateTeaserTitle": "Laws can differ by state",
+    "stateTeaserDesc": "See which national and state-specific laws apply where you live."
   },
   "search": {
     "placeholder": "Search policies… try “MGNREGA” or “RTI”",
@@ -61,7 +110,15 @@
     "submitButton": "Show relevant policies",
     "coverageNotice": "Currently this shows central (nationwide) laws that apply in every state. State-specific laws are being added over time.",
     "selectStatePrompt": "Select a state above to see the policies that apply to you.",
-    "noResults": "No policies match your question for this state yet."
+    "noResults": "No policies match your question for this state yet.",
+    "gridLabel": "Or pick your state/UT from the list",
+    "stateSpecificHeading": "State-specific policies for {state}",
+    "noStateSpecific": "No hand-curated state-specific laws for {state} yet. The national laws below still apply there.",
+    "nationalHeading": "National policies relevant to this location",
+    "mapLoading": "Loading map…",
+    "mapLabel": "Map of India's states and union territories, click a state or UT to select it",
+    "mapHint": "Click a state or union territory on the map",
+    "mapProvenance": "State boundaries are approximate (Census-2011-derived) and for orientation only, not surveyed/official boundaries."
   },
   "policy": {
     "officialSource": "Official source",
@@ -95,7 +152,9 @@
     "ttsTitle": "Text-to-speech",
     "tts": "Every summary can be read aloud using your browser's built-in speech engine, in the language you're currently viewing. Voice quality depends on your device and operating system.",
     "contactTitle": "Questions or corrections",
-    "contact": "If you spot an error or an outdated source link, please let us know so we can correct it."
+    "contact": "If you spot an error or an outdated source link, please let us know so we can correct it.",
+    "onePara": "IndianPolicy is an independent, non-governmental project that turns Indian central and state laws, checked against official sources, into plain-language summaries in 7 languages, read aloud if you'd rather listen than read, it isn't legal advice, just a starting point so you understand your rights before deciding whether to consult a professional.",
+    "meetGuide": "Meet your guide"
   },
   "disclaimer": {
     "title": "Disclaimer",
@@ -189,7 +248,11 @@
     "stateLabel": "Filter by state (optional)",
     "statePlaceholder": "All states / central laws",
     "stateResultsHeading": "State-specific laws for {state}",
-    "noStateResults": "No state-specific laws found for {state} yet. The central laws above still apply there."
+    "noStateResults": "No state-specific laws found for {state} yet. The central laws above still apply there.",
+    "liveResultsHeading": "Live results for {state} from India's legislation database",
+    "section": "Section",
+    "officialSource": "Official source",
+    "aiAnswerNote": "Based only on the policies shown below, not general knowledge — check the official source link for the full legal text."
   },
   "recentChanges": {
     "title": "Recent changes",

@@ -47,6 +47,8 @@ interface CandidateEntry {
   title: string;
   summary: string;
   keywords: string;
+  officialSourceUrl: string | null;
+  officialSourceName: string | null;
 }
 
 // The Supabase `policies` table only exists once the project owner has run
@@ -91,6 +93,8 @@ async function loadCandidates(
                 title: localeContent.title,
                 summary: localeContent.summary,
                 keywords: keywords.join(' '),
+                officialSourceUrl: row.official_source_url ?? null,
+                officialSourceName: row.official_source_name ?? null,
               },
             };
           })
@@ -105,6 +109,8 @@ async function loadCandidates(
                 title: localeContent.title,
                 summary: localeContent.summary,
                 keywords: p.keywords.join(' '),
+                officialSourceUrl: p.officialSourceUrl ?? null,
+                officialSourceName: p.officialSourceName ?? null,
               },
             };
           });
@@ -193,6 +199,8 @@ export async function POST(req: NextRequest) {
     slug: p.slug,
     title: (p.content[locale] ?? p.content.en).title,
     reason: null as string | null,
+    sourceUrl: p.officialSourceUrl ?? null,
+    sourceName: p.officialSourceName ?? null,
   }));
 
   // Live lookup against the real Indian legislation corpus (Vaquill), only
@@ -235,7 +243,7 @@ export async function POST(req: NextRequest) {
         content:
           'You are a research assistant for an Indian law/policy encyclopedia. Given a user\'s ' +
           'plain-language question and a numbered list of candidate laws/policies from the site\'s ' +
-          'database, do two things:\n' +
+          "own verified database, do two things:\n" +
           `0. IMPORTANT: Write the "answer" paragraph and every "reason" string ENTIRELY in ` +
           `${languageName} (locale "${locale}"), regardless of what language the question was asked ` +
           `in. This is a hard requirement, not a preference. Proper nouns that don't have a common ` +
@@ -243,26 +251,37 @@ export async function POST(req: NextRequest) {
           `like "FIR" or "RTI") may stay in English/Roman script within the ${languageName} sentence, ` +
           'but the surrounding sentence structure and all other words must be in ' +
           `${languageName}${locale !== 'en' ? ', written in its native script (not transliterated into Roman letters)' : ''}.\n` +
-          '1. Write a genuinely helpful, well-organized paragraph (4-7 sentences) that directly ' +
-          'answers the question using your general knowledge of Indian law — do not artificially ' +
-          'narrow the answer to only what the candidate list happens to contain.\n' +
+          '1. GROUNDING — this is a hard requirement, not a preference: write a helpful paragraph ' +
+          '(3-6 sentences) that answers the question by rephrasing and tailoring, in plain simple ' +
+          "language, ONLY the information already present in the candidate summaries below. Do NOT " +
+          'add facts, section numbers, case law, procedures, deadlines, or legal details from your ' +
+          'own general knowledge that are not already stated in the candidate summaries — this is a ' +
+          'legal-information site and an invented detail could mislead someone about their real legal ' +
+          'rights. If the candidate summaries only partially answer the question, say plainly what ' +
+          "they do cover, without filling the gap yourself. If NONE of the candidates are actually " +
+          'relevant to the question, return an empty "answer" string ("") and an empty "results" ' +
+          'array — do not invent an answer from general knowledge just because candidates were ' +
+          'provided.\n' +
+          'IMPORTANT — never refer to "the site", "the database", "the candidates", "the entries", ' +
+          '"the site\'s entries", or any other meta-reference to where the information came from. ' +
+          'Just answer the question directly, as if stating the relevant law/policy facts yourself ' +
+          '(still strictly grounded in the given summaries, never adding outside facts). If coverage ' +
+          'is only partial, phrase that as a direct statement about the law/topic itself (e.g. "There ' +
+          'is no single law covering every step of starting a business, but registering a business ' +
+          'typically involves...") rather than commenting on what this tool/site/database does or ' +
+          "doesn't contain.\n" +
           'IMPORTANT — do not default to a gender, relationship, or setting (e.g. workplace, home, ' +
-          'online, public) that the user did not mention. Many candidate laws in the list are titled ' +
-          'around "women" specifically (e.g. workplace harassment of women, domestic violence against ' +
-          'women) because those are the named protection Acts — but the underlying question (e.g. about ' +
-          'harassment, violence, or abuse in general) applies to anyone regardless of gender. So: START ' +
-          'the answer with the generally-applicable law that protects ANY person (e.g. the relevant ' +
-          'Bharatiya Nyaya Sanhita / Indian Penal Code provisions on criminal intimidation, insult, ' +
-          'defamation, stalking, or assault, and how/where to file a police complaint — an FIR), THEN ' +
-          'mention any additional gender-specific or context-specific protections (like the POSH Act or ' +
-          'Domestic Violence Act) as extra options that exist ONLY IF the situation happens to involve ' +
-          'those specific contexts, explicitly noting they are gender/context-specific rather than ' +
-          'presenting them as the primary or only answer. Do not invent specific section numbers or case ' +
-          'law you are not confident about — speak in terms of the named Acts instead where precision ' +
-          'matters.\n' +
-          '2. Pick and rank the most relevant candidates from the given list (most relevant first) with ' +
-          'a one-sentence reason each. Only choose from the given candidate slugs — never invent a slug. ' +
-          'It is fine to return zero results if truly none of the candidates are relevant.\n' +
+          'online, public) that the user did not mention, if the candidate list offers both a ' +
+          'generally-applicable option and a gender/context-specific one (e.g. a general criminal-law ' +
+          'entry vs. a "domestic violence against women" or "workplace harassment of women" entry) for ' +
+          'the same underlying issue, lead with the generally-applicable one and mention the ' +
+          'gender/context-specific one as an additional option only if that context actually applies, ' +
+          'explicitly noting it is gender/context-specific. Base this purely on what is in the given ' +
+          "candidate list, don't bring in laws that aren't in it.\n" +
+          '2. Pick and rank the candidates your answer actually drew from (most relevant first) with ' +
+          'a one-sentence reason each, written the same grounded way. Only choose from the given ' +
+          'candidate slugs — never invent a slug. It is fine (and expected, per the grounding rule ' +
+          'above) to return zero results if truly none of the candidates are relevant.\n' +
           'Respond with STRICT JSON only, in this exact shape: ' +
           '{"answer": "<paragraph>", "results": [{"slug": "<slug>", "reason": "<short reason>"}]}. ' +
           'No markdown, no extra text outside the JSON.\n\n' +
@@ -274,24 +293,39 @@ export async function POST(req: NextRequest) {
           `Question: "${query}"` +
           (isValidState
             ? `\n\nThe user has selected the state/UT "${stateSlug.replace(/-/g, ' ')}" as a filter. ` +
-              'Briefly note in the answer where state-specific rules could differ from the general/central ' +
-              "law (without inventing specific state law details you don't know), but keep the primary " +
-              'answer focused on the generally-applicable central law.'
+              'Only mention state-specific rules if a candidate below actually covers them — do not ' +
+              "invent or assume state-specific details that aren't in the candidate summaries. If none " +
+              'of the candidates are state-specific, just answer from the general/central candidates ' +
+              'given, without speculating about how state law might differ.'
             : '') +
-          `\n\nCandidate laws/policies from the site's database:\n${list}` +
+          `\n\nCandidate laws/policies from the site's own database (this is the ONLY information you ` +
+          `may draw from for the answer and reasons):\n${list}` +
           `\n\nReminder: write the "answer" field and every "reason" field in ${languageName}` +
           `${locale !== 'en' ? ' (native script, not Roman transliteration)' : ''}, regardless of the ` +
           'language the question above happens to be written in, and regardless of the language of ' +
-          'this instruction text.',
+          'this instruction text. And reminder: ground strictly in the candidate summaries above, no ' +
+          'outside facts.',
       },
     ]);
 
     const candidateBySlug = new Map(candidates.map((c) => [c.entry.slug, c]));
-    let results: { slug: string; title: string; reason: string | null }[] = (raw.results ?? [])
+    let results: {
+      slug: string;
+      title: string;
+      reason: string | null;
+      sourceUrl: string | null;
+      sourceName: string | null;
+    }[] = (raw.results ?? [])
       .filter((r) => candidateBySlug.has(r.slug))
       .map((r) => {
         const c = candidateBySlug.get(r.slug)!;
-        return { slug: r.slug, title: c.entry.title, reason: r.reason ? stripAiTells(r.reason) : r.reason };
+        return {
+          slug: r.slug,
+          title: c.entry.title,
+          reason: r.reason ? stripAiTells(r.reason) : r.reason,
+          sourceUrl: c.entry.officialSourceUrl,
+          sourceName: c.entry.officialSourceName,
+        };
       });
 
     // The model quite often writes a genuinely good freeform "answer" but
@@ -307,9 +341,13 @@ export async function POST(req: NextRequest) {
     // of silently going empty whenever the model skips its own ranking
     // step.
     if (results.length === 0) {
-      results = candidates
-        .slice(0, 5)
-        .map((c) => ({ slug: c.entry.slug, title: c.entry.title, reason: null as string | null }));
+      results = candidates.slice(0, 5).map((c) => ({
+        slug: c.entry.slug,
+        title: c.entry.title,
+        reason: null as string | null,
+        sourceUrl: c.entry.officialSourceUrl,
+        sourceName: c.entry.officialSourceName,
+      }));
     }
 
     const answer = stripAiTells((raw.answer ?? '').trim());
@@ -332,6 +370,8 @@ export async function POST(req: NextRequest) {
       slug: c.entry.slug,
       title: c.entry.title,
       reason: null,
+      sourceUrl: c.entry.officialSourceUrl,
+      sourceName: c.entry.officialSourceName,
     }));
     // Deliberately NOT cached: this is the degraded/no-AI fallback path
     // (e.g. a transient OpenRouter outage), so caching it would risk

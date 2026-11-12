@@ -14,10 +14,10 @@ interface ChangeItem {
 }
 
 const TYPE_STYLES: Record<ChangeItem['type'], string> = {
-  add: 'bg-indiagreen/10 text-indiagreen',
-  amend: 'bg-amber-100 text-amber-700',
-  delete: 'bg-red-100 text-red-700',
-  enacted: 'bg-blue-100 text-blue-700',
+  add: 'bg-indiagreen/10 text-indiagreen dark:bg-indiagreen/20 dark:text-teal-100',
+  amend: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200',
+  delete: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200',
+  enacted: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200',
 };
 
 const TYPE_LABEL_KEYS: Record<ChangeItem['type'], string> = {
@@ -55,28 +55,28 @@ export default function RecentChangesSidebar() {
 
   return (
     <aside className="w-full">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-500 dark:text-cream-200/70">
         {t('title')}
       </h2>
       {loading ? (
-        <p className="mt-2 text-xs text-gray-400">{t('loading')}</p>
+        <p className="mt-2 text-xs text-ink-500/80 dark:text-cream-200/50">{t('loading')}</p>
       ) : changes.length === 0 ? (
-        <p className="mt-2 text-xs text-gray-400">{t('empty')}</p>
+        <p className="mt-2 text-xs text-ink-500/80 dark:text-cream-200/50">{t('empty')}</p>
       ) : (
         <ul className="mt-2 space-y-2">
           {changes.map((c) => (
             <li key={c.id} className="text-xs">
               <Link
                 href={`/changes/${c.id}`}
-                className="block rounded px-1 py-0.5 hover:bg-gray-50 hover:underline"
+                className="block rounded px-1 py-0.5 hover:bg-cream-100 hover:underline dark:hover:bg-white/5"
               >
                 <span
                   className={`mr-1.5 inline-block rounded px-1.5 py-0.5 font-medium ${TYPE_STYLES[c.type]}`}
                 >
                   {t(TYPE_LABEL_KEYS[c.type])}
                 </span>
-                <span className="text-gray-700">{c.title || c.slug}</span>
-                <div className="mt-0.5 text-gray-400">
+                <span className="text-ink-700 dark:text-cream-100">{c.title || c.slug}</span>
+                <div className="mt-0.5 text-ink-500/80 dark:text-cream-200/50">
                   {c.datePrecision === 'year'
                     ? format.dateTime(new Date(c.date), { year: 'numeric' })
                     : format.dateTime(new Date(c.date), { dateStyle: 'medium', timeStyle: 'short' })}

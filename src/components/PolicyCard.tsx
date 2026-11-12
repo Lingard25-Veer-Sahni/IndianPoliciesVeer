@@ -10,16 +10,16 @@ export default function PolicyCard({ policy, locale }: { policy: Policy; locale:
   return (
     <Link
       href={`/policies/${policy.slug}`}
-      className="block rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-navy/30"
+      className="card-warm block p-5 transition hover:-translate-y-0.5 hover:shadow-warm-lg"
     >
       <div className="flex items-start justify-between gap-2">
-        <span className="inline-flex items-center rounded-full bg-navy/10 px-2.5 py-0.5 text-xs font-medium text-navy">
+        <span className="inline-flex items-center rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700 dark:bg-teal-700/30 dark:text-teal-100">
           {tc(policy.category)}
         </span>
       </div>
-      <h3 className="mt-3 text-lg font-semibold text-gray-900">{content.title}</h3>
-      <p className="mt-2 line-clamp-3 text-sm text-gray-600">{content.summary}</p>
-      <p className="mt-4 text-sm font-medium text-navy">{t('readMore')} →</p>
+      <h3 className="mt-3 text-lg font-semibold text-ink dark:text-cream-50">{content.title}</h3>
+      <p className="mt-2 line-clamp-3 text-sm text-ink-500 dark:text-cream-200/70">{content.summary}</p>
+      <p className="mt-4 text-sm font-medium text-teal-700 dark:text-teal-100">{t('readMore')} →</p>
     </Link>
   );
 }

@@ -1,9 +1,9 @@
 {
   "crons": [
     {
-      "path": "/api/cron/refresh",
+      "path": "/api/cron/refresh?secret=REPLACE_WITH_YOUR_CRON_SECRET",
       "schedule": "0 * * * *"
     }
   ],
-  "_note": "Vercel's serverless cron sends a GET request to `path` and does not include custom headers, so it cannot send x-cron-secret. The /api/cron/refresh route therefore also accepts the secret via a `?secret=` query param as a fallback. If deploying this cron to Vercel, update the path here to include the query param, e.g. \"/api/cron/refresh?secret=YOUR_CRON_SECRET\", and set CRON_SECRET in the Vercel project's environment variables to match."
+  "_note": "REPLACE_WITH_YOUR_CRON_SECRET above is a placeholder, not a real secret — Claude does not know and will never fill in your actual CRON_SECRET value. Before deploying, (1) pick a secret string just for this purpose, (2) set CRON_SECRET to that value in the Vercel project's environment variables, and (3) replace the placeholder in the `path` above with that same value. Note this value will then be visible in this git-committed file to anyone with read access to the repo, so use a dedicated, low-stakes secret rather than reusing a sensitive credential. Vercel's serverless cron sends a GET request to `path` and cannot send custom headers, so it cannot send x-cron-secret — this query-param fallback is the only way it can authenticate. IMPORTANT: this production cron (/api/cron/refresh) only ever writes to the Supabase `policies`/`changes` tables, which the deployed site's actual pages do NOT read (they're statically built from src/data/policies.ts at build/deploy time) — it will update the Recent Changes feed in production but will never change the real policy pages there. Only the local scripts/ai-refresh.ts + `npm run cron:local` process (run on your own machine) edits src/data/policies.ts itself, and even then the deployed site only picks that up after you commit, push, and redeploy."
 }

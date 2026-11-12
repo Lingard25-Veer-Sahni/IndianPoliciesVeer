@@ -11,6 +11,8 @@ interface AiSearchResult {
   slug: string;
   title: string;
   reason: string | null;
+  sourceUrl?: string | null;
+  sourceName?: string | null;
 }
 
 // A live result from the Vaquill Indian legislation API (see
@@ -35,11 +37,14 @@ interface LiveActResult {
 const TYPE_CHARS_PER_TICK = 4;
 const TYPE_TICK_MS = 12;
 
-// The AI-written answer paragraph is temporarily hidden from the UI (the
-// underlying search/ranking still runs the same as before, and the related
-// policy results below still show up — only the prose paragraph itself is
-// suppressed). Flip back to true to re-enable it once ready.
-const SHOW_AI_ANSWER = false;
+// The AI-written answer paragraph is enabled. The prompt that generates it
+// (see src/app/api/search/route.ts) is strictly grounded: the model may only
+// rephrase/tailor information already present in the site's own candidate
+// policy summaries, and must not add outside facts, section numbers, case
+// law, or procedures from general knowledge. Each result card below also
+// shows a link to the policy's official source so the underlying law can be
+// checked directly.
+const SHOW_AI_ANSWER = true;
 
 export default function AiSearchPage() {
   const t = useTranslations('aiSearch');
@@ -152,8 +157,8 @@ export default function AiSearchPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
-      <p className="mt-2 text-gray-600">{t('description')}</p>
+      <h1 className="text-3xl font-bold text-ink dark:text-cream-50">{t('title')}</h1>
+      <p className="mt-2 text-ink-500 dark:text-cream-200/70">{t('description')}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-3">
         <textarea
@@ -161,15 +166,15 @@ export default function AiSearchPage() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('placeholder')}
           rows={4}
-          className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm shadow-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+          className="w-full rounded-lg border border-ink/15 bg-cream-50 px-4 py-3 text-sm text-ink shadow-sm focus:border-teal focus:outline-none focus:ring-1 focus:ring-teal dark:border-white/15 dark:bg-ink/60 dark:text-cream-50 dark:placeholder:text-cream-200/40"
         />
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <label className="flex flex-1 flex-col gap-1 text-sm sm:max-w-xs">
-            <span className="font-medium text-gray-700">{t('stateLabel')}</span>
+            <span className="font-medium text-ink-700 dark:text-cream-100">{t('stateLabel')}</span>
             <select
               value={stateSlug}
               onChange={(e) => setStateSlug(e.target.value)}
-              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-navy focus:outline-none focus:ring-1 focus:ring-navy"
+              className="rounded-md border border-ink/15 bg-cream-50 px-3 py-2 text-sm text-ink focus:border-teal focus:outline-none focus:ring-1 focus:ring-teal dark:border-white/15 dark:bg-ink/60 dark:text-cream-50"
             >
               <option value="">{t('statePlaceholder')}</option>
               {sortedStates.map((s) => (
@@ -182,7 +187,7 @@ export default function AiSearchPage() {
           <button
             type="submit"
             disabled={loading || !query.trim()}
-            className="rounded-full bg-navy px-6 py-2 text-sm font-medium text-white hover:bg-navy/90 disabled:cursor-not-allowed disabled:opacity-50 sm:self-end"
+            className="rounded-full bg-teal-600 px-6 py-2 text-sm font-medium text-white hover:bg-teal-600/90 disabled:cursor-not-allowed disabled:opacity-50 sm:self-end"
           >
             {loading ? t('searching') : t('submit')}
           </button>
@@ -191,18 +196,18 @@ export default function AiSearchPage() {
 
       <div className="mt-8">
         {loading && (
-          <div className="ai-scan-track rounded-xl border border-navy/10 bg-white px-5 py-6">
+          <div className="ai-scan-track rounded-xl border border-teal-600/15 bg-cream-50 px-5 py-6 dark:bg-ink/60">
             <div className="flex items-center gap-4">
               <span className="relative flex h-9 w-9 items-center justify-center">
-                <span className="ai-scan-ring absolute inset-0 rounded-full border-2 border-navy/40" />
-                <span className="relative flex h-3 w-3 items-center justify-center rounded-full bg-navy" />
+                <span className="ai-scan-ring absolute inset-0 rounded-full border-2 border-teal-600/40" />
+                <span className="relative flex h-3 w-3 items-center justify-center rounded-full bg-teal-600" />
               </span>
               <div>
-                <p className="text-sm font-medium text-navy">{t('searching')}</p>
+                <p className="text-sm font-medium text-teal-700 dark:text-teal-100">{t('searching')}</p>
                 <div className="mt-1 flex items-center gap-1">
-                  <span className="ai-scan-dot h-1.5 w-1.5 rounded-full bg-navy/60" />
-                  <span className="ai-scan-dot h-1.5 w-1.5 rounded-full bg-navy/60" />
-                  <span className="ai-scan-dot h-1.5 w-1.5 rounded-full bg-navy/60" />
+                  <span className="ai-scan-dot h-1.5 w-1.5 rounded-full bg-teal-600/60" />
+                  <span className="ai-scan-dot h-1.5 w-1.5 rounded-full bg-teal-600/60" />
+                  <span className="ai-scan-dot h-1.5 w-1.5 rounded-full bg-teal-600/60" />
                 </div>
               </div>
             </div>
@@ -211,7 +216,7 @@ export default function AiSearchPage() {
         )}
 
         {!loading && error && (
-          <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <p className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-200">
             {t('error')}
           </p>
         )}
@@ -220,18 +225,23 @@ export default function AiSearchPage() {
           !error &&
           submitted &&
           results.length === 0 &&
-          (!SHOW_AI_ANSWER || !answer) && <p className="text-gray-500">{t('empty')}</p>}
+          (!SHOW_AI_ANSWER || !answer) && (
+            <p className="text-ink-500 dark:text-cream-200/70">{t('empty')}</p>
+          )}
 
         {SHOW_AI_ANSWER && !loading && !error && answer && (
-          <div className="rounded-xl border border-navy/15 bg-navy/[0.03] p-5">
-            <p className="whitespace-pre-line leading-relaxed text-gray-800">
+          <div className="rounded-xl border border-navy/15 bg-teal-600/[0.03] p-5 dark:border-teal-100/15 dark:bg-teal-600/10">
+            <p className="whitespace-pre-line leading-relaxed text-ink-700 dark:text-cream-100">
               {typedAnswer}
               {!answerDone && <span className="ai-caret h-4 align-middle" />}
             </p>
             {answerDone && (
-              <div className="mt-4">
+              <div className="mt-4 flex flex-wrap items-center gap-3">
                 <TextToSpeech text={answer} />
               </div>
+            )}
+            {answerDone && (
+              <p className="mt-3 text-xs text-ink-500/80 dark:text-cream-200/50">{t('aiAnswerNote')}</p>
             )}
           </div>
         )}
@@ -239,43 +249,71 @@ export default function AiSearchPage() {
         {showResults && (
           <div className="mt-6 space-y-4 animate-[fadeIn_0.3s_ease-in]">
             {!aiPowered && (
-              <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+              <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/20 dark:text-amber-200">
                 {t('fallbackNotice')}
               </p>
             )}
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-500 dark:text-cream-200/70">
               {t('relevantLaws')}
             </p>
             {results.map((r) => (
-              <Link
+              <div
                 key={r.slug}
-                href={`/policies/${r.slug}`}
-                className="block rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:border-navy hover:shadow-md"
+                className="block rounded-lg border border-ink/10 bg-cream-50 p-4 shadow-sm transition hover:border-teal-600 hover:shadow-md dark:border-white/10 dark:bg-ink/60"
               >
-                <h2 className="text-base font-semibold text-navy">{r.title}</h2>
-                {r.reason && <p className="mt-1 text-sm text-gray-600">{r.reason}</p>}
-              </Link>
+                <Link href={`/policies/${r.slug}`} className="block">
+                  <h2 className="text-base font-semibold text-teal-700 dark:text-teal-100">{r.title}</h2>
+                  {r.reason && (
+                    <p className="mt-1 text-sm text-ink-500 dark:text-cream-200/70">{r.reason}</p>
+                  )}
+                </Link>
+                {r.sourceUrl && (
+                  <a
+                    href={r.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-block text-xs font-medium text-teal-600 underline hover:text-teal-700 dark:text-teal-100 dark:hover:text-teal-50"
+                  >
+                    {t('officialSource')}{r.sourceName ? `: ${r.sourceName}` : ''}
+                  </a>
+                )}
+              </div>
             ))}
           </div>
         )}
 
         {showStateResults && (
           <div className="mt-6 space-y-4 animate-[fadeIn_0.3s_ease-in]">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-500 dark:text-cream-200/70">
               {t('stateResultsHeading', { state: selectedStateName })}
             </p>
             {stateResults.length === 0 && liveResults.length === 0 ? (
-              <p className="text-sm text-gray-500">{t('noStateResults', { state: selectedStateName })}</p>
+              <p className="text-sm text-ink-500 dark:text-cream-200/70">
+                {t('noStateResults', { state: selectedStateName })}
+              </p>
             ) : (
               stateResults.map((r) => (
-                <Link
+                <div
                   key={r.slug}
-                  href={`/policies/${r.slug}`}
-                  className="block rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:border-navy hover:shadow-md"
+                  className="block rounded-lg border border-ink/10 bg-cream-50 p-4 shadow-sm transition hover:border-teal-600 hover:shadow-md dark:border-white/10 dark:bg-ink/60"
                 >
-                  <h2 className="text-base font-semibold text-navy">{r.title}</h2>
-                  {r.reason && <p className="mt-1 text-sm text-gray-600">{r.reason}</p>}
-                </Link>
+                  <Link href={`/policies/${r.slug}`} className="block">
+                    <h2 className="text-base font-semibold text-teal-700 dark:text-teal-100">{r.title}</h2>
+                    {r.reason && (
+                      <p className="mt-1 text-sm text-ink-500 dark:text-cream-200/70">{r.reason}</p>
+                    )}
+                  </Link>
+                  {r.sourceUrl && (
+                    <a
+                      href={r.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-block text-xs font-medium text-teal-600 underline hover:text-teal-700 dark:text-teal-100 dark:hover:text-teal-50"
+                    >
+                      {t('officialSource')}{r.sourceName ? `: ${r.sourceName}` : ''}
+                    </a>
+                  )}
+                </div>
               ))
             )}
           </div>
@@ -283,7 +321,7 @@ export default function AiSearchPage() {
 
         {showStateResults && liveResults.length > 0 && (
           <div className="mt-6 space-y-4 animate-[fadeIn_0.3s_ease-in]">
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-500 dark:text-cream-200/70">
               {t('liveResultsHeading', { state: selectedStateName })}
             </p>
             {liveResults.map((r) => (
@@ -292,15 +330,21 @@ export default function AiSearchPage() {
                 href={r.sourceUrl ?? r.pdfUrl ?? undefined}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition hover:border-navy hover:shadow-md"
+                className="block rounded-lg border border-ink/10 bg-cream-50 p-4 shadow-sm transition hover:border-teal-600 hover:shadow-md dark:border-white/10 dark:bg-ink/60"
               >
-                <h2 className="text-base font-semibold text-navy">
+                <h2 className="text-base font-semibold text-teal-700 dark:text-teal-100">
                   {r.title}
-                  {r.sectionNumber ? ` — ${t('section')} ${r.sectionNumber}` : ''}
+                  {r.sectionNumber ? `, ${t('section')} ${r.sectionNumber}` : ''}
                 </h2>
-                {r.sectionTitle && <p className="mt-1 text-sm font-medium text-gray-700">{r.sectionTitle}</p>}
-                <p className="mt-1 line-clamp-3 text-sm text-gray-600">{r.content}</p>
-                <p className="mt-2 text-xs text-gray-400">{r.citation}</p>
+                {r.sectionTitle && (
+                  <p className="mt-1 text-sm font-medium text-ink-700 dark:text-cream-100">
+                    {r.sectionTitle}
+                  </p>
+                )}
+                <p className="mt-1 line-clamp-3 text-sm text-ink-500 dark:text-cream-200/70">
+                  {r.content}
+                </p>
+                <p className="mt-2 text-xs text-ink-500/70 dark:text-cream-200/50">{r.citation}</p>
               </a>
             ))}
           </div>

@@ -16,10 +16,10 @@ interface ChangeDetail {
 }
 
 const TYPE_STYLES: Record<ChangeDetail['type'], string> = {
-  add: 'bg-indiagreen/10 text-indiagreen',
-  amend: 'bg-amber-100 text-amber-700',
-  delete: 'bg-red-100 text-red-700',
-  enacted: 'bg-blue-100 text-blue-700',
+  add: 'bg-indiagreen/10 text-indiagreen dark:bg-indiagreen/20 dark:text-teal-100',
+  amend: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200',
+  delete: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200',
+  enacted: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200',
 };
 
 const TYPE_LABEL_KEYS: Record<ChangeDetail['type'], string> = {
@@ -69,13 +69,17 @@ export default function ChangeDetailPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <Link href="/" className="text-sm text-navy hover:underline">
+      <Link href="/" className="text-sm text-navy hover:underline dark:text-teal-100">
         {t('back')}
       </Link>
 
-      {loading && <p className="mt-6 text-gray-500">{tRecentChanges('loading')}</p>}
+      {loading && (
+        <p className="mt-6 text-ink-500 dark:text-cream-200/70">{tRecentChanges('loading')}</p>
+      )}
 
-      {!loading && (notFound || !item) && <p className="mt-6 text-gray-500">{t('notFound')}</p>}
+      {!loading && (notFound || !item) && (
+        <p className="mt-6 text-ink-500 dark:text-cream-200/70">{t('notFound')}</p>
+      )}
 
       {!loading && item && (
         <>
@@ -85,19 +89,23 @@ export default function ChangeDetailPage() {
             >
               {tRecentChanges(TYPE_LABEL_KEYS[item.type])}
             </span>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-ink-500 dark:text-cream-200/70">
               {item.datePrecision === 'year'
                 ? format.dateTime(new Date(item.date), { year: 'numeric' })
                 : format.dateTime(new Date(item.date), { dateStyle: 'medium', timeStyle: 'short' })}
             </span>
           </div>
 
-          <h1 className="mt-3 text-3xl font-bold text-gray-900">{item.title}</h1>
+          <h1 className="mt-3 text-3xl font-bold text-ink dark:text-cream-50">{item.title}</h1>
 
           {item.summary && (
             <div className="mt-8">
-              <h2 className="text-lg font-semibold text-gray-900">{tPolicy('summaryTitle')}</h2>
-              <p className="mt-2 whitespace-pre-line leading-relaxed text-gray-800">{item.summary}</p>
+              <h2 className="text-lg font-semibold text-ink dark:text-cream-50">
+                {tPolicy('summaryTitle')}
+              </h2>
+              <p className="mt-2 whitespace-pre-line leading-relaxed text-ink-700 dark:text-cream-100">
+                {item.summary}
+              </p>
             </div>
           )}
 
@@ -105,7 +113,7 @@ export default function ChangeDetailPage() {
             <div className="mt-8">
               <Link
                 href={`/policies/${item.slug}`}
-                className="text-sm font-medium text-navy hover:underline"
+                className="text-sm font-medium text-navy hover:underline dark:text-teal-100"
               >
                 {t('viewPolicy')}
               </Link>

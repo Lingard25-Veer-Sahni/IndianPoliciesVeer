@@ -8,6 +8,9 @@ import { getSiteUrl } from '@/lib/site';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import RecentChangesTab from '@/components/RecentChangesTab';
+import EntryGate from '@/components/EntryGate';
+import GuideWidget from '@/components/GuideWidget';
+import { themeInitScript } from '@/lib/theme';
 import './globals.css';
 
 function hasLocale(candidates: readonly string[], value: string): boolean {
@@ -74,16 +77,32 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
-      <body className={`lang-${locale} min-h-screen flex flex-col`}>
+    <html lang={locale} suppressHydrationWarning>
+      <head>
+        {/* Sets the `dark` class on <html> before paint, from the stored
+            choice (localStorage) or OS preference, so dark-mode users never
+            see a light-mode flash. See src/lib/theme.ts. */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body
+        className={`lang-${locale} min-h-screen flex flex-col bg-cream-50 text-ink dark:bg-ink dark:text-cream-50`}
+        suppressHydrationWarning
+      >
         <NextIntlClientProvider messages={messages}>
           <Header />
-          <main className="flex-1">{children}</main>
+          {/* md:pl-12 reserves just enough room for the RecentChangesTab's
+              collapsed button (visible from the md breakpoint up) so it
+              never sits on top of page headings on narrower containers —
+              found overlapping "Terms of Service" etc. at the tablet
+              width during the warm-redesign QA pass. */}
+          <main className="flex-1 md:pl-12">{children}</main>
           {/* Fixed, collapsible tab on the left edge of the viewport — kept
               outside the normal document flow so it never affects existing
               page layouts/widths, and only takes up space when opened. */}
           <RecentChangesTab />
           <Footer />
+          <EntryGate />
+          <GuideWidget />
         </NextIntlClientProvider>
       </body>
     </html>

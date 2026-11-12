@@ -9,8 +9,20 @@ const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export interface CachedSearchResponse {
   answer: string | null;
-  results: { slug: string; title: string; reason: string | null }[];
-  stateResults: { slug: string; title: string; reason: string | null }[];
+  results: {
+    slug: string;
+    title: string;
+    reason: string | null;
+    sourceUrl?: string | null;
+    sourceName?: string | null;
+  }[];
+  stateResults: {
+    slug: string;
+    title: string;
+    reason: string | null;
+    sourceUrl?: string | null;
+    sourceName?: string | null;
+  }[];
   aiPowered: boolean;
   // Live results from the Vaquill Indian legislation API (src/lib/vaquill.ts),
   // covering whichever state the user selected. Optional/possibly-undefined
